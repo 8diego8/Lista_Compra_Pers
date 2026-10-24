@@ -1,98 +1,238 @@
+
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#198754">
-  <meta name="description" content="Una lista de la compra sencilla, privada y rápida.">
+  <meta name="description" content="Una lista de la compra sencilla, privada y sincronizada.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Compra">
+
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="stylesheet" href="./styles.css">
+
   <title>Lista de la compra</title>
 </head>
 <body>
   <main class="app-shell">
-    <header class="topbar">
-      <div class="heading">
-        <p class="eyebrow">TU COMPRA, MÁS FÁCIL</p>
-        <h1>Lista de la compra</h1>
-      </div>
-      <div class="top-actions">
-        <button class="button button-primary add-top" id="open-add" type="button">
-          + Añadir producto
-        </button>
-      
-        <button class="button empty-top" id="empty-basket" type="button">
-          Vaciar cesta
-        </button>
-      </div>
-    </header>
 
-    <section class="panel list-panel" aria-labelledby="list-title">
-      <div class="section-heading">
-        <h2 id="list-title">En la lista</h2>
-        <span id="count-label" class="count-label">0 productos</span>
-      </div>
-      <div id="current-list" class="product-list"></div>
-      <p id="empty-list" class="empty-state">Tu lista está vacía. Añade el primer producto.</p>
+    <!-- INICIO DE SESIÓN -->
+    <section id="auth-panel" class="panel auth-panel">
+      <p class="eyebrow">TU COMPRA, MÁS FÁCIL</p>
+      <h1>Lista de la compra</h1>
+
+      <p class="auth-description">
+        Inicia sesión para guardar y sincronizar tus productos en la nube.
+      </p>
+
+      <form id="auth-form">
+        <label for="auth-email">Correo electrónico</label>
+        <input
+          id="auth-email"
+          type="email"
+          autocomplete="email"
+          placeholder="tu@correo.com"
+          required
+        >
+
+        <label for="auth-password">Contraseña</label>
+        <input
+          id="auth-password"
+          type="password"
+          autocomplete="current-password"
+          minlength="6"
+          placeholder="Mínimo 6 caracteres"
+          required
+        >
+
+        <p id="auth-error" class="form-error" role="alert"></p>
+        <p id="auth-status" class="status-message" role="status"></p>
+
+        <button id="login-button" class="button button-primary auth-button" type="submit">
+          Iniciar sesión
+        </button>
+
+        <button id="register-button" class="button button-secondary auth-button" type="button">
+          Crear cuenta nueva
+        </button>
+
+        <button id="reset-button" class="auth-link" type="button">
+          He olvidado mi contraseña
+        </button>
+      </form>
+
+      <p id="config-warning" class="form-error" hidden>
+        Falta configurar Firebase. Revisa el archivo firebase-config.js.
+      </p>
     </section>
 
-    <section class="panel history-panel" aria-labelledby="history-title">
-      <div class="section-heading">
-        <h2 id="history-title">Productos anteriores</h2>
-        <span class="subheading">añadir rápido</span>
-      </div>
-      <div id="history-list" class="product-list history-list"></div>
-      <p id="empty-history" class="empty-state">Los productos que añadas aparecerán aquí para reutilizarlos.</p>
-    </section>
+    <!-- APLICACIÓN -->
+    <div id="app-content" hidden>
+      <header class="topbar">
+        <div class="heading">
+          <p class="eyebrow">TU COMPRA, MÁS FÁCIL</p>
+          <h1>Lista de la compra</h1>
+        </div>
 
-    <div class="share-wrap">
-      <button id="share-button" class="button button-share" type="button">
-        <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"/></svg>
-        Compartir lista
-      </button>
-      <p class="privacy-note">Tus productos se guardan solo en este dispositivo.</p>
+        <div class="top-actions">
+          <button class="button button-primary add-top" id="open-add" type="button">
+            + Añadir producto
+          </button>
+
+          <button class="button empty-top" id="empty-basket" type="button">
+            Vaciar cesta
+          </button>
+        </div>
+      </header>
+
+      <section class="account-bar" aria-label="Cuenta conectada">
+        <div class="account-info">
+          <span class="connection-dot" aria-hidden="true"></span>
+          <span id="user-email" class="account-email"></span>
+        </div>
+        <button id="logout-button" class="account-logout" type="button">
+          Cerrar sesión
+        </button>
+      </section>
+
+      <p id="sync-status" class="sync-status" role="status" aria-live="polite">
+        Conectando con la nube…
+      </p>
+
+      <section class="panel list-panel" aria-labelledby="list-title">
+        <div class="section-heading">
+          <h2 id="list-title">En la lista</h2>
+          <span id="count-label" class="count-label">0 productos</span>
+        </div>
+
+        <div id="current-list" class="product-list"></div>
+        <p id="empty-list" class="empty-state">
+          Tu lista está vacía. Añade el primer producto.
+        </p>
+      </section>
+
+      <section class="panel history-panel" aria-labelledby="history-title">
+        <div class="section-heading">
+          <h2 id="history-title">Productos anteriores</h2>
+          <span class="subheading">añadir rápido</span>
+        </div>
+
+        <div id="history-list" class="product-list history-list"></div>
+        <p id="empty-history" class="empty-state">
+          Los productos que añadas aparecerán aquí para reutilizarlos.
+        </p>
+      </section>
+
+      <div class="share-wrap">
+        <button id="share-button" class="button button-share" type="button">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="19"
+            height="19"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"/>
+          </svg>
+          Compartir lista
+        </button>
+
+        <p class="privacy-note">
+          Lista sincronizada con tu cuenta de Firebase.
+        </p>
+      </div>
     </div>
   </main>
 
+  <!-- DIÁLOGO PARA AÑADIR PRODUCTOS -->
   <dialog id="add-dialog" class="add-dialog" aria-labelledby="dialog-title">
     <form id="add-form" method="dialog">
       <div class="dialog-head">
         <h2 id="dialog-title">Añadir producto</h2>
-        <button class="icon-button" id="close-dialog" type="button" aria-label="Cerrar">×</button>
+        <button class="icon-button" id="close-dialog" type="button" aria-label="Cerrar">
+          ×
+        </button>
       </div>
+
       <label class="sr-only" for="product-name">Nombre del producto</label>
-      <input id="product-name" name="product-name" type="text" maxlength="80" placeholder="Ej. leche" autocomplete="off" enterkeyhint="done" required>
+      <input
+        id="product-name"
+        name="product-name"
+        type="text"
+        maxlength="80"
+        placeholder="Ej. leche"
+        autocomplete="off"
+        enterkeyhint="done"
+        required
+      >
+
       <p id="form-error" class="form-error" role="status"></p>
+
       <div class="dialog-actions">
-        <button id="cancel-add" class="button button-secondary" type="button">Cancelar</button>
-        <button class="button button-primary" type="submit">Añadir</button>
+        <button id="cancel-add" class="button button-secondary" type="button">
+          Cancelar
+        </button>
+        <button class="button button-primary" type="submit">
+          Añadir
+        </button>
       </div>
     </form>
   </dialog>
 
+  <!-- DIÁLOGO PARA COMPARTIR -->
   <dialog id="share-dialog" class="add-dialog share-dialog" aria-labelledby="share-title">
     <form method="dialog">
       <div class="dialog-head">
         <h2 id="share-title">Compartir lista</h2>
-        <button class="icon-button" id="close-share" type="button" aria-label="Cerrar">×</button>
+        <button class="icon-button" id="close-share" type="button" aria-label="Cerrar">
+          ×
+        </button>
       </div>
+
       <p class="share-description">Revisa el texto antes de compartirlo.</p>
-      <textarea id="share-text" readonly rows="8" aria-label="Texto de la lista"></textarea>
+
+      <textarea
+        id="share-text"
+        readonly
+        rows="8"
+        aria-label="Texto de la lista"
+      ></textarea>
+
       <div class="share-actions">
-        <button id="native-share" class="button button-primary" type="button">Compartir…</button>
-        <button id="copy-share" class="button button-secondary" type="button">Copiar texto</button>
-        <button id="whatsapp-share" class="button button-secondary" type="button">Abrir WhatsApp</button>
+        <button id="native-share" class="button button-primary" type="button">
+          Compartir…
+        </button>
+        <button id="copy-share" class="button button-secondary" type="button">
+          Copiar texto
+        </button>
+        <button id="whatsapp-share" class="button button-secondary" type="button">
+          Abrir WhatsApp
+        </button>
       </div>
+
       <p id="share-status" class="status-message" role="status" aria-live="polite"></p>
     </form>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="./app.js" defer></script>
+
+  <!-- Firebase compat: los scripts se cargan antes de app.js -->
+  <script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+  <script defer src="./firebase-config.js"></script>
+  <script defer src="./app.js"></script>
 </body>
 </html>
