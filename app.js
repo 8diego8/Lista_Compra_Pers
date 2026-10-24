@@ -152,7 +152,43 @@
     showToast("Producto añadido.");
     return true;
   }
+function emptyBasket() {
+  if (state.items.length === 0) {
+    showToast("La cesta ya está vacía.");
+    return;
+  }
 
+  const confirmed = window.confirm(
+    "¿Quieres vaciar la cesta? Todos los productos se guardarán en Productos anteriores."
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  // Conservar todos los productos en el historial.
+  state.items.forEach(item => {
+    const alreadySaved = state.history.some(
+      name => normalize(name) === normalize(item.name)
+    );
+
+    if (!alreadySaved) {
+      state.history.push(item.name);
+    }
+  });
+
+  // Vaciar la lista actual, sin borrar el historial.
+  const total = state.items.length;
+  state.items = [];
+
+  // Guardar y actualizar la interfaz.
+  persist();
+  render();
+
+  showToast(
+    `${total} ${total === 1 ? "producto guardado" : "productos guardados"} en Productos anteriores.`
+  );
+}
   function openAddDialog() {
     formError.textContent = "";
     productInput.value = "";
