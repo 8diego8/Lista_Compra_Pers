@@ -85,3 +85,41 @@ h2 { margin: 0; font-size: 18px; font-weight: 780; letter-spacing: -.025em; }
   .panel { padding: 18px 16px; border-radius: 19px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+/* Botones de acciones del encabezado */
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.empty-top {
+  flex-shrink: 0;
+  padding: 0 14px;
+  min-height: 46px;
+  font-size: 13px;
+  color: var(--green-dark);
+  background: #ffffff;
+  border: 1px solid #cfe2d5;
+}
+
+.empty-top:hover {
+  background: var(--green-soft);
+}
+
+/* Adaptación para pantallas pequeñas */
+@media (max-width: 390px) {
+  .top-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .top-actions .button {
+    width: 126px;
+    max-width: 126px;
+    padding: 8px 10px;
+    white-space: normal;
+    line-height: 1.2;
+  }
+}
