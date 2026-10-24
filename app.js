@@ -227,6 +227,7 @@ function emptyBasket() {
   }
 
   $("#open-add").addEventListener("click", openAddDialog);
+  $("#empty-basket").addEventListener("click", emptyBasket);
   $("#cancel-add").addEventListener("click", () => closeDialog(addDialog));
   $("#close-dialog").addEventListener("click", () => closeDialog(addDialog));
   $("#close-share").addEventListener("click", () => closeDialog(shareDialog));
